@@ -51,6 +51,5 @@ This project is licensed under the [Eclipse Public License - v 2.0](LICENSE).
 
 ---
 
-### Made by Ansh Kabra Web Dev
+### Made by Ansh Kabra
 Enjoy your fully functional, spam-proof Link Shortener. Now go share those sweet short links. Happy coding! 
-```
