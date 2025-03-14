@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Shortener</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-pink-100 to-indigo-100 flex items-center justify-center">
+  <div class="bg-white shadow-xl rounded-lg p-8 max-w-sm w-full text-center">
+    <h1 class="text-3xl font-bold mb-4">Link Shortener</h1>
+    <input type="text" id="longUrl" placeholder="Enter URL" class="border border-gray-300 w-full p-2 rounded mb-4 focus:outline-none focus:border-blue-400">
+    <button id="shortenBtn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition">Shorten</button>
+    <p id="result" class="mt-4 text-lg font-semibold text-blue-700"></p>
+    <p id="errorMsg" class="mt-4 text-lg font-semibold text-red-500"></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js"
+    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuk2juiwfFQvpMZol6vtgOW_MmULBueh8",
+      authDomain: "link-shortnerer.firebaseapp.com",
+      projectId: "link-shortnerer",
+      storageBucket: "link-shortnerer.firebasestorage.app",
+      messagingSenderId: "229316570969",
+      appId: "1:229316570969:web:8a4fe6f712ef214c7e6648",
+      measurementId: "G-4NX0Y3BHJB"
+    }
+
+    const app = initializeApp(firebaseConfig)
+    const analytics = getAnalytics(app)
+    const db = getFirestore(app)
+
+    async function getUserIP() {
+      const res = await fetch("https://api.ipify.org?format=json")
+      const data = await res.json()
+      return data.ip
+    }
+
+    async function shortenUrl() {
+      const longUrl = document.getElementById("longUrl").value
+      if (!longUrl) return
+      const ip = await getUserIP()
+      const ipRef = doc(db, "ips", ip)
+      const ipSnap = await getDoc(ipRef)
+      const now = Date.now()
+      const cooldown = 60 * 1000
+      if (ipSnap.exists()) {
+        const ipData = ipSnap.data()
+        if (now - ipData.lastRequest < cooldown) {
+          document.getElementById("errorMsg").textContent = "Slow down! Try again in a minute."
+          return
+        }
+      }
+      const shortId = Math.random().toString(36).substring(2, 8)
+      await setDoc(doc(db, "links", shortId), { longUrl, clicks: 0 })
+      await setDoc(ipRef, { lastRequest: now })
+      document.getElementById("errorMsg").textContent = ""
+      document.getElementById("result").innerHTML = "Short URL: " + window.location.origin + "/" + shortId
+    }
+
+    async function checkRedirect() {
+      const path = window.location.pathname.replace("/", "")
+      if (!path) return
+      const snap = await getDoc(doc(db, "links", path))
+      if (snap.exists()) {
+        const data = snap.data()
+        await updateDoc(doc(db, "links", path), { clicks: data.clicks + 1 })
+        window.location.href = data.longUrl
+      }
+    }
+
+    document.getElementById("shortenBtn").addEventListener("click", shortenUrl)
+    checkRedirect()
+  </script>
+</body>
+</html>
