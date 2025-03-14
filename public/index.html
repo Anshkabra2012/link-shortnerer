@@ -22,7 +22,7 @@
     <div class="container mx-auto text-center">
       <a href="https://github.com/Anshkabra2012/link-shortnerer" target="_blank" class="text-gray-700 hover:text-gray-900 inline-flex items-center gap-2">
         <i class="fa-brands fa-github text-2xl"></i>
-        <span>&lt;/&gt; by <a href="https://github.com/anshkabra2012" target="_blank" class="font-semibold"> Ansh Kabra</a></span>
+        <span>View on GitHub</span>
       </a>
     </div>
     <script src="https://kit.fontawesome.com/e328bff894.js" crossorigin="anonymous" data-analytics="0"></script>
@@ -67,7 +67,7 @@
       await setDoc(doc(db, "links", shortId), { longUrl, clicks: 0 })
       await setDoc(ipRef, { lastRequest: now })
       document.getElementById("errorMsg").textContent = ""
-      document.getElementById("result").innerHTML = "Short URL: " + window.location.origin + "/" + shortId
+      document.getElementById("result").textContent = "Short URL: " + window.location.origin + "/" + shortId
     }
     async function checkRedirect() {
       const path = window.location.pathname.replace("/", "")
