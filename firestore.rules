@@ -1,15 +1,15 @@
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Allow anyone to read links for redirection
+
+    // Anyone can read or write short links
     match /links/{linkId} {
-      allow read: if true; 
-      allow write: if request.auth == null; // Anyone can shorten a link
+      allow read: if true;
+      allow write: if request.auth == null;
     }
-    
-    // IP spam prevention logic
+
+    // IP spam prevention: let anyone read/write the IP doc
     match /ips/{ipId} {
-      allow read, write: if request.auth == null && request.resource.data.keys().hasOnly(["lastRequest"]);
+      allow read, write: if request.auth == null;
     }
   }
 }
